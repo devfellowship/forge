@@ -19,7 +19,7 @@ This ${km} ships as part of the **${s.source}** registry and is maintained by \`
 
 ## Configuration
 
-The skill reads sensible defaults from \`SKILL.md\`. To override, drop a \`.loadout.json\` at your project root:
+The skill reads sensible defaults from \`SKILL.md\`. To override, drop a \`.forge.json\` at your project root:
 
 \`\`\`json
 {

@@ -34,7 +34,7 @@ function Hero() {
       </h1>
       <p className="m-0 mb-[26px] max-w-[600px] text-[16.5px] leading-[1.6] text-[hsl(212_12%_64%)]">
         Discover, audit and install agent skills, MCP servers and connections — straight into
-        Claude Code, Cursor, Codex and the rest of your loadout.
+        Claude Code, Cursor, Codex and the rest of your toolkit.
       </p>
       <div className="flex max-w-[560px] flex-wrap items-center gap-4">
         <CodeBlock

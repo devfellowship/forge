@@ -27,10 +27,10 @@ export function DocsPage() {
         </span>
       </div>
       <h1 className="m-0 mb-[14px] font-heading text-[46px] font-bold uppercase leading-none">
-        Get started with Loadout
+        Get started with Forge
       </h1>
       <p className="m-0 mb-9 max-w-[600px] text-base text-[hsl(212_12%_64%)]">
-        Loadout is fully compatible with the stock <InlineCode>skills</InlineCode> CLI — just point
+        Forge is fully compatible with the stock <InlineCode>skills</InlineCode> CLI — just point
         it at the DevFellowship registry.
       </p>
 
