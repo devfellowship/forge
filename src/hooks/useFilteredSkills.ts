@@ -1,18 +1,18 @@
 import { useMemo } from "react";
 import type { LeaderboardTab, Skill } from "@/data/types";
-import { SKILLS } from "@/data/skills";
 import type { KindFilterValue } from "@/components/domain/KindFilter";
 
 interface Filters {
+  skills: Skill[];
   query: string;
   tab: LeaderboardTab;
   topics: string[];
   kind: KindFilterValue;
 }
 
-export function useFilteredSkills({ query, tab, topics, kind }: Filters): Skill[] {
+export function useFilteredSkills({ skills, query, tab, topics, kind }: Filters): Skill[] {
   return useMemo(() => {
-    let list = SKILLS.slice();
+    let list = skills.slice();
     const q = query.trim().toLowerCase();
 
     if (q) {
@@ -38,5 +38,5 @@ export function useFilteredSkills({ query, tab, topics, kind }: Filters): Skill[
     }
 
     return list;
-  }, [query, tab, topics, kind]);
+  }, [skills, query, tab, topics, kind]);
 }

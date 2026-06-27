@@ -1,10 +1,9 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ChevronLeft, Search } from "lucide-react";
-import { SKILLS } from "@/data/skills";
 import type { Scope } from "@/data/types";
 import { installCommand } from "@/lib/format";
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
+import { useSkill } from "@/hooks/useSkill";
 import { Tabs, type TabItem } from "@/components/ui/Tabs";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { KindBadge } from "@/components/domain/KindBadge";
@@ -36,11 +35,7 @@ export function SkillDetailPage() {
   const [agent, setAgent] = useState("claude-code");
   const [scope, setScope] = useState<Scope>("global");
 
-  const skill = useMemo(
-    () => SKILLS.find((s) => s.slug === slug && s.source === source),
-    [slug, source],
-  );
-  const loading = useSimulatedLoading(520, [slug]);
+  const { skill, loading } = useSkill(source, slug);
 
   const tabs: TabItem[] = skill
     ? [

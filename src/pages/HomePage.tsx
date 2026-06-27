@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { SKILLS, TOPICS } from "@/data/skills";
-import type { LeaderboardTab } from "@/data/types";
+import { TOPICS } from "@/data/skills";
+import type { LeaderboardTab, Skill } from "@/data/types";
 import { formatCount } from "@/lib/format";
 import { useSearchState } from "@/hooks/useSearchState";
 import { useFilteredSkills } from "@/hooks/useFilteredSkills";
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading";
+import { useSkills } from "@/hooks/useSkills";
 import { Button } from "@/components/ui/Button";
 import { CodeBlock } from "@/components/ui/CodeBlock";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -14,11 +14,12 @@ import { TopicFilterChips } from "@/components/domain/TopicFilterChips";
 import { KindFilter, type KindFilterValue } from "@/components/domain/KindFilter";
 import { SkillCard } from "@/components/domain/SkillCard";
 import { SkillCardSkeleton } from "@/components/domain/SkillCardSkeleton";
+import { PreviewBanner } from "@/components/domain/PreviewBanner";
 
 const GRID = "grid grid-cols-[repeat(auto-fill,minmax(330px,1fr))] gap-4";
 
-function Hero() {
-  const totalInstalls = SKILLS.reduce((acc, s) => acc + s.installs, 0);
+function Hero({ skills }: { skills: Skill[] }) {
+  const totalInstalls = skills.reduce((acc, s) => acc + s.installs, 0);
   return (
     <section className="animate-fadeUp py-[54px_40px] pb-10 pt-[54px]">
       <div className="mb-5 inline-flex items-center gap-[7px] rounded-full border border-[hsl(33_90%_55%/.22)] bg-[hsl(33_90%_55%/.1)] px-[11px] py-[5px]">
@@ -42,7 +43,7 @@ function Hero() {
           className="min-w-[320px] flex-1 rounded-[11px] px-[15px] py-[13px]"
         />
         <div className="flex gap-[22px]">
-          <Stat value={String(SKILLS.length)} label="Skills" />
+          <Stat value={String(skills.length)} label="Skills" />
           <Stat value={formatCount(totalInstalls)} label="Installs" />
         </div>
       </div>
@@ -67,8 +68,8 @@ export function HomePage() {
   const [topics, setTopics] = useState<string[]>([]);
   const [kind, setKind] = useState<KindFilterValue>("all");
 
-  const loading = useSimulatedLoading(800, []);
-  const results = useFilteredSkills({ query, tab, topics, kind });
+  const { skills, loading, usingFallback } = useSkills();
+  const results = useFilteredSkills({ skills, query, tab, topics, kind });
 
   const toggleTopic = (t: string): void => {
     setTopics((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
@@ -83,7 +84,9 @@ export function HomePage() {
 
   return (
     <main className="mx-auto max-w-[1200px] px-6 pb-[90px]">
-      <Hero />
+      <Hero skills={skills} />
+
+      {usingFallback && <PreviewBanner />}
 
       <LeaderboardTabs active={tab} onChange={setTab} />
 
