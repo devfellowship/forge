@@ -34,4 +34,32 @@ describe("MarkdownView XSS hardening", () => {
     expect(anchor).not.toBeNull();
     expect(anchor?.getAttribute("href")).toBe("https://example.com");
   });
+
+  it("drops a javascript: image src", () => {
+    const { container } = render(<MarkdownView source={"![x](javascript:alert(1))"} />);
+    const img = container.querySelector("img");
+    // The image may still render, but never with a dangerous scheme in src.
+    const src = img?.getAttribute("src") ?? "";
+    expect(src).not.toMatch(/^javascript:/i);
+    expect(src).toBe("");
+    expect(container.innerHTML).not.toMatch(/src="javascript:/i);
+  });
+
+  it("drops a data: image src", () => {
+    const { container } = render(
+      <MarkdownView source={"![x](data:text/html,<script>alert(1)</script>)"} />,
+    );
+    const img = container.querySelector("img");
+    const src = img?.getAttribute("src") ?? "";
+    expect(src).not.toMatch(/^data:/i);
+    expect(src).toBe("");
+    expect(container.innerHTML).not.toMatch(/src="data:/i);
+  });
+
+  it("renders a safe https image src", () => {
+    const { container } = render(<MarkdownView source={"![x](https://ok.com/a.png)"} />);
+    const img = container.querySelector("img");
+    expect(img).not.toBeNull();
+    expect(img?.getAttribute("src")).toBe("https://ok.com/a.png");
+  });
 });

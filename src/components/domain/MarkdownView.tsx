@@ -17,6 +17,14 @@ function SafeAnchor({ href, children, ...rest }: ComponentPropsWithoutRef<"a">) 
   );
 }
 
+function SafeImg({ src, alt, ...rest }: ComponentPropsWithoutRef<"img">) {
+  // Do not rely on react-markdown's internal defaultUrlTransform (undocumented).
+  // Run the src through the same scheme allowlist and drop disallowed schemes.
+  const safe = safeHref(src);
+  if (!safe) return <img alt={alt} {...rest} />;
+  return <img alt={alt} src={safe} {...rest} />;
+}
+
 /**
  * Renders untrusted, author-controlled markdown. react-markdown escapes text and
  * does NOT execute raw HTML (rehype-raw is deliberately not used), and link hrefs
@@ -26,7 +34,7 @@ function SafeAnchor({ href, children, ...rest }: ComponentPropsWithoutRef<"a">) 
 export function MarkdownView({ source }: MarkdownViewProps) {
   return (
     <div className="md animate-fadeUp">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: SafeAnchor }}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: SafeAnchor, img: SafeImg }}>
         {source}
       </ReactMarkdown>
     </div>
