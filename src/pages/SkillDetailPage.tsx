@@ -107,7 +107,7 @@ export function SkillDetailPage() {
 
             <aside className="flex flex-col gap-[14px] lg:sticky lg:top-20">
               <InstallPanel
-                command={installCommand(skill.owner, skill.repo)}
+                command={installCommand(skill.owner, skill.repo, skill.skill)}
                 installable={skill.installable}
                 agent={agent}
                 onAgentChange={setAgent}

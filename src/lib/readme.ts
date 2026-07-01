@@ -9,7 +9,7 @@ ${s.description}
 
 ## Overview
 
-This ${km} ships as part of the **${s.source}** registry and is maintained by \`${s.author}\`. Install it with \`npx skills add ${s.source}/${s.slug}\` and it will be available to your agent immediately — no restart required.
+This ${km} ships as part of the **${s.source}** registry and is maintained by \`${s.author}\`. Install it with \`npx skills add ${s.source}@${s.skill}\` and it will be available to your agent immediately — no restart required.
 
 ## When to use it
 

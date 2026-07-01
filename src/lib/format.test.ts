@@ -20,7 +20,9 @@ describe("sparkPath guard", () => {
 });
 
 describe("installCommand", () => {
-  it("targets owner/repo", () => {
-    expect(installCommand("devfellowship", "skills")).toBe("npx skills add devfellowship/skills");
+  it("targets the specific skill via owner/repo@skill", () => {
+    expect(installCommand("devfellowship", "skills", "dfl-stack")).toBe(
+      "npx skills add devfellowship/skills@dfl-stack",
+    );
   });
 });

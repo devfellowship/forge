@@ -18,7 +18,7 @@ export function SkillCard({ skill }: SkillCardProps) {
 
   const onCopy = (e: React.MouseEvent): void => {
     e.stopPropagation();
-    const cmd = installCommand(skill.owner, skill.repo);
+    const cmd = installCommand(skill.owner, skill.repo, skill.skill);
     void copyText(cmd).then((ok) => {
       if (ok) toast.success("Copied install command");
       else toast.error("Couldn't copy to clipboard");

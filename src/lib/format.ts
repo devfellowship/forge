@@ -22,7 +22,11 @@ export function sparkPath(trend: number[]): string {
     .join(" ");
 }
 
-/** Install target is the repo (owner/repo), per the skills CLI convention. */
-export function installCommand(owner: string, repo: string): string {
-  return `npx skills add ${owner}/${repo}`;
+/**
+ * Install target is the specific skill via the upstream `owner/repo@skill`
+ * filter form (skills CLI), which narrows a multi-skill repo to one skill by
+ * name — matching the 3-segment API identity owner/repo/skill.
+ */
+export function installCommand(owner: string, repo: string, skill: string): string {
+  return `npx skills add ${owner}/${repo}@${skill}`;
 }
