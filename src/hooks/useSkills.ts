@@ -27,13 +27,9 @@ export function useSkills(): SkillsState {
     fetchSkills(controller.signal)
       .then((live) => {
         if (!active) return;
-        if (live.length === 0) {
-          setSkills(SKILLS);
-          setUsingFallback(true);
-        } else {
-          setSkills(live);
-          setUsingFallback(false);
-        }
+        // A valid empty registry is a real state — show it, never mask with mock data.
+        setSkills(live);
+        setUsingFallback(false);
       })
       .catch((err: unknown) => {
         if (!active || controller.signal.aborted) return;

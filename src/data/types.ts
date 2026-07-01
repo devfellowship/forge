@@ -20,7 +20,15 @@ export interface ConnectionRef {
 export interface Skill {
   id: string;
   name: string;
+  /** Repository owner, e.g. "devfellowship". */
+  owner: string;
+  /** Repository name, e.g. "skills". */
+  repo: string;
+  /** Skill identifier within the repo, e.g. "dfl-code-style". */
+  skill: string;
+  /** Back-compat alias for skill within a repo (kept === skill). */
   slug: string;
+  /** Display form "owner/repo". */
   source: string;
   kind: Kind;
   description: string;
@@ -33,6 +41,8 @@ export interface Skill {
   mcps: McpTool[];
   conns: ConnectionRef[];
   files: SkillFile[];
+  /** False when owner/repo/skill fail the identity allowlist — install is unsafe. */
+  installable: boolean;
 }
 
 export interface AgentTarget {

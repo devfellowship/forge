@@ -9,14 +9,22 @@ export interface SkillSearchState {
   error: string | null;
 }
 
-export function useSkillSearch(query: string, mode: SearchMode): SkillSearchState {
+/**
+ * Server-side search against /api/v1/skills/search. Disabled (enabled=false) when the
+ * caller is operating on fallback/mock data, in which case the client filter is used instead.
+ */
+export function useSkillSearch(
+  query: string,
+  mode: SearchMode,
+  enabled: boolean,
+): SkillSearchState {
   const [results, setResults] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const q = query.trim();
-    if (!q) {
+    if (!enabled || !q) {
       setResults([]);
       setLoading(false);
       setError(null);
@@ -50,7 +58,7 @@ export function useSkillSearch(query: string, mode: SearchMode): SkillSearchStat
       controller.abort();
       window.clearTimeout(handle);
     };
-  }, [query, mode]);
+  }, [query, mode, enabled]);
 
   return { results, loading, error };
 }

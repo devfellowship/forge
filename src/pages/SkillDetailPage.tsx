@@ -30,12 +30,16 @@ function BackLink() {
 }
 
 export function SkillDetailPage() {
-  const { source, slug } = useParams<{ source: string; slug: string }>();
+  const { owner, repo, skill: skillId } = useParams<{
+    owner: string;
+    repo: string;
+    skill: string;
+  }>();
   const [tab, setTab] = useState<DetailTab>("readme");
   const [agent, setAgent] = useState("claude-code");
   const [scope, setScope] = useState<Scope>("global");
 
-  const { skill, loading } = useSkill(source, slug);
+  const { skill, loading } = useSkill(owner, repo, skillId);
 
   const tabs: TabItem[] = skill
     ? [
@@ -103,7 +107,8 @@ export function SkillDetailPage() {
 
             <aside className="flex flex-col gap-[14px] lg:sticky lg:top-20">
               <InstallPanel
-                command={installCommand(skill.source, skill.slug)}
+                command={installCommand(skill.owner, skill.repo)}
+                installable={skill.installable}
                 agent={agent}
                 onAgentChange={setAgent}
                 scope={scope}

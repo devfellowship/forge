@@ -1,6 +1,7 @@
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/cn";
+import { copyText } from "@/lib/clipboard";
 import { Tooltip } from "./Tooltip";
 
 interface CodeBlockProps {
@@ -8,16 +9,6 @@ interface CodeBlockProps {
   className?: string;
   size?: "sm" | "md";
   copyMessage?: string;
-}
-
-async function copyText(text: string): Promise<void> {
-  try {
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(text);
-    }
-  } catch {
-    /* clipboard unavailable */
-  }
 }
 
 export function CodeBlock({
@@ -41,9 +32,12 @@ export function CodeBlock({
       <Tooltip label="Copy">
         <button
           type="button"
+          aria-label="Copy command"
           onClick={() => {
-            void copyText(command);
-            toast.success(copyMessage);
+            void copyText(command).then((ok) => {
+              if (ok) toast.success(copyMessage);
+              else toast.error("Couldn't copy to clipboard");
+            });
           }}
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] border border-[hsl(215_15%_20%)] bg-secondary text-muted-foreground transition-colors hover:border-[hsl(33_90%_55%/.4)] hover:text-[hsl(33_90%_60%)]"
         >

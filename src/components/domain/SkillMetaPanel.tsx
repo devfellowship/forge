@@ -56,7 +56,7 @@ export function SkillMetaPanel({ skill }: SkillMetaPanelProps) {
             onClick={() => toast.success("Opening source repository…")}
             className="flex items-center gap-1 text-[13px] font-semibold text-[hsl(33_82%_62%)]"
           >
-            {skill.source}/skills
+            {skill.source}
             <ArrowUpRight className="h-3 w-3" />
           </button>
         }

@@ -1,7 +1,8 @@
-import { Download } from "lucide-react";
+import { Download, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { AGENTS } from "@/data/skills";
 import type { Scope } from "@/data/types";
+import { copyText } from "@/lib/clipboard";
 import { Card } from "@/components/ui/Card";
 import { CodeBlock } from "@/components/ui/CodeBlock";
 import { Button } from "@/components/ui/Button";
@@ -10,6 +11,7 @@ import { AgentSelector } from "./AgentSelector";
 
 interface InstallPanelProps {
   command: string;
+  installable: boolean;
   agent: string;
   onAgentChange: (id: string) => void;
   scope: Scope;
@@ -24,6 +26,7 @@ const PanelLabel = ({ children }: { children: string }) => (
 
 export function InstallPanel({
   command,
+  installable,
   agent,
   onAgentChange,
   scope,
@@ -32,9 +35,26 @@ export function InstallPanel({
   const agentLabel = AGENTS.find((a) => a.id === agent)?.label ?? "";
 
   const copy = (): void => {
-    void navigator.clipboard?.writeText(command).catch(() => undefined);
-    toast.success("Copied install command");
+    void copyText(command).then((ok) => {
+      if (ok) toast.success("Copied install command");
+      else toast.error("Couldn't copy to clipboard");
+    });
   };
+
+  if (!installable) {
+    return (
+      <Card className="p-[18px]">
+        <PanelLabel>Install</PanelLabel>
+        <div className="flex items-start gap-[10px] rounded-[9px] border border-[hsl(0_70%_50%/.25)] bg-[hsl(0_70%_50%/.08)] px-[12px] py-[10px] text-[12.5px] leading-[1.5] text-[hsl(0_75%_74%)]">
+          <ShieldAlert className="mt-[1px] h-4 w-4 shrink-0" strokeWidth={2} />
+          <span>
+            This skill has an unrecognized identifier and can't be installed safely. The install
+            command has been disabled.
+          </span>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-[18px]">

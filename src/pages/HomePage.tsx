@@ -6,6 +6,7 @@ import { formatCount } from "@/lib/format";
 import { useSearchState } from "@/hooks/useSearchState";
 import { useFilteredSkills } from "@/hooks/useFilteredSkills";
 import { useSkills } from "@/hooks/useSkills";
+import { useSkillSearch } from "@/hooks/useSkillSearch";
 import { Button } from "@/components/ui/Button";
 import { CodeBlock } from "@/components/ui/CodeBlock";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -63,13 +64,25 @@ function Stat({ value, label }: { value: string; label: string }) {
 }
 
 export function HomePage() {
-  const { query, setQuery } = useSearchState();
+  const { query, mode, setQuery } = useSearchState();
   const [tab, setTab] = useState<LeaderboardTab>("trending");
   const [topics, setTopics] = useState<string[]>([]);
   const [kind, setKind] = useState<KindFilterValue>("all");
 
   const { skills, loading, usingFallback } = useSkills();
-  const results = useFilteredSkills({ skills, query, tab, topics, kind });
+
+  // Real server search only when hitting the live registry; mock/fallback uses the client filter.
+  const serverSearchEnabled = !usingFallback && query.trim().length > 0;
+  const { results: searchResults, loading: searching } = useSkillSearch(
+    query,
+    mode,
+    serverSearchEnabled,
+  );
+
+  const base = serverSearchEnabled ? searchResults : skills;
+  const filterQuery = serverSearchEnabled ? "" : query;
+  const results = useFilteredSkills({ skills: base, query: filterQuery, tab, topics, kind });
+  const busy = loading || searching;
 
   const toggleTopic = (t: string): void => {
     setTopics((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
@@ -95,7 +108,11 @@ export function HomePage() {
         <KindFilter value={kind} onChange={setKind} />
       </div>
 
-      {loading ? (
+      <div aria-live="polite" className="sr-only">
+        {busy ? "Loading skills" : `${results.length} skills found`}
+      </div>
+
+      {busy ? (
         <div className={GRID}>
           {Array.from({ length: 8 }, (_, i) => (
             <SkillCardSkeleton key={i} />

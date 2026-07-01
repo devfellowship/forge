@@ -7,6 +7,7 @@ export function formatCount(n: number): string {
 }
 
 export function sparkPath(trend: number[]): string {
+  if (trend.length < 2) return "";
   const w = 60;
   const h = 18;
   const max = Math.max(...trend);
@@ -21,6 +22,7 @@ export function sparkPath(trend: number[]): string {
     .join(" ");
 }
 
-export function installCommand(source: string, slug: string): string {
-  return `npx skills add ${source}/${slug}`;
+/** Install target is the repo (owner/repo), per the skills CLI convention. */
+export function installCommand(owner: string, repo: string): string {
+  return `npx skills add ${owner}/${repo}`;
 }
