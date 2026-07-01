@@ -25,13 +25,40 @@ describe("useSkills fallback policy", () => {
     expect(result.current.usingFallback).toBe(false);
   });
 
-  it("uses mock fallback ONLY when the request errors", async () => {
+  it("uses sample fallback ONLY when the request errors", async () => {
     fetchSkills.mockRejectedValue(new Error("network down"));
     const { result } = renderHook(() => useSkills());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.skills).toEqual(SKILLS);
+    expect(result.current.skills).toHaveLength(SKILLS.length);
     expect(result.current.usingFallback).toBe(true);
     expect(result.current.error).toBe("network down");
+  });
+
+  it("never presents fallback rows as real installable entries", async () => {
+    fetchSkills.mockRejectedValue(new Error("500"));
+    const { result } = renderHook(() => useSkills());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.skills.length).toBeGreaterThan(0);
+    for (const s of result.current.skills) {
+      expect(s.preview).toBe(true);
+      expect(s.installable).toBe(false);
+    }
+  });
+
+  it("distinguishes empty-200 (no fallback) from fetch failure (fallback)", async () => {
+    fetchSkills.mockResolvedValue([]);
+    const empty = renderHook(() => useSkills());
+    await waitFor(() => expect(empty.result.current.loading).toBe(false));
+    expect(empty.result.current.usingFallback).toBe(false);
+    expect(empty.result.current.error).toBeNull();
+    expect(empty.result.current.skills).toEqual([]);
+
+    fetchSkills.mockReset();
+    fetchSkills.mockRejectedValue(new Error("boom"));
+    const failed = renderHook(() => useSkills());
+    await waitFor(() => expect(failed.result.current.loading).toBe(false));
+    expect(failed.result.current.usingFallback).toBe(true);
+    expect(failed.result.current.error).toBe("boom");
   });
 
   it("shows live data when the registry returns skills", async () => {

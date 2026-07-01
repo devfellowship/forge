@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidIdentity, isValidSegment } from "./identity";
+import { isValidIdentity, isValidSegment, repoUrl } from "./identity";
 import { adaptSkill } from "./api";
 
 describe("isValidSegment", () => {
@@ -47,5 +47,16 @@ describe("adaptSkill install-command validation", () => {
   it("keeps isValidIdentity consistent with adaptSkill", () => {
     expect(isValidIdentity("devfellowship", "skills", "dfl-code-style")).toBe(true);
     expect(isValidIdentity("a", "b", "c;d")).toBe(false);
+  });
+});
+
+describe("repoUrl", () => {
+  it("builds a github url for valid segments", () => {
+    expect(repoUrl("devfellowship", "skills")).toBe("https://github.com/devfellowship/skills");
+  });
+
+  it("returns empty for hostile segments rather than a malformed link", () => {
+    expect(repoUrl("x; rm -rf ~ #", "repo")).toBe("");
+    expect(repoUrl("owner", "../etc")).toBe("");
   });
 });

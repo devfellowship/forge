@@ -1,7 +1,7 @@
 import { Clock, Download, Github, ArrowUpRight, ShieldCheck, ShieldAlert } from "lucide-react";
-import { toast } from "sonner";
 import type { Skill } from "@/data/types";
-import { formatCount } from "@/lib/format";
+import { formatCount, humanizeDate } from "@/lib/format";
+import { repoUrl } from "@/lib/identity";
 import { auditMeta } from "@/lib/meta";
 import { Card } from "@/components/ui/Card";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -28,6 +28,7 @@ export function SkillMetaPanel({ skill }: SkillMetaPanelProps) {
   const count = useCountUp(skill.installs);
   const meta = auditMeta(skill.audit.verdict);
   const AuditIcon = skill.audit.verdict === "trust" ? ShieldCheck : ShieldAlert;
+  const sourceUrl = repoUrl(skill.owner, skill.repo);
 
   return (
     <Card className="flex flex-col gap-[14px] p-[18px]">
@@ -44,21 +45,30 @@ export function SkillMetaPanel({ skill }: SkillMetaPanelProps) {
       <Row
         icon={<Clock className="h-[15px] w-[15px]" />}
         label="Updated"
-        value={<span className="text-[13px] font-medium text-[hsl(208_28%_80%)]">{skill.updatedAt}</span>}
+        value={
+          <span className="text-[13px] font-medium text-[hsl(208_28%_80%)]">
+            {humanizeDate(skill.updatedAt)}
+          </span>
+        }
       />
       <Divider />
       <Row
         icon={<Github className="h-[15px] w-[15px]" />}
         label="Source"
         value={
-          <button
-            type="button"
-            onClick={() => toast.success("Opening source repository…")}
-            className="flex items-center gap-1 text-[13px] font-semibold text-[hsl(33_82%_62%)]"
-          >
-            {skill.source}
-            <ArrowUpRight className="h-3 w-3" />
-          </button>
+          sourceUrl ? (
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-[13px] font-semibold text-[hsl(33_82%_62%)]"
+            >
+              {skill.source}
+              <ArrowUpRight className="h-3 w-3" />
+            </a>
+          ) : (
+            <span className="text-[13px] font-semibold text-[hsl(212_11%_58%)]">{skill.source}</span>
+          )
         }
       />
       <Divider />

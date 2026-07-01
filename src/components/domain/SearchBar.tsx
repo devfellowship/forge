@@ -26,7 +26,7 @@ export function SearchBar({ value, onChange, mode, onModeChange, className }: Se
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder="Search skills, MCPs, connections…"
-      className={cn("max-w-[440px] flex-1", className)}
+      className={cn("min-w-[120px] max-w-[440px] flex-1", className)}
       trailing={
         <button
           type="button"

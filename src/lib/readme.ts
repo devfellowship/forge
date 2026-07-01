@@ -3,6 +3,10 @@ import { kindMeta } from "./meta";
 
 export function readmeFor(s: Skill): string {
   const km = kindMeta(s.kind).label.toLowerCase();
+  const topicsLine =
+    s.topics.length > 0
+      ? `- You are working inside the ${s.topics.join(", ")} space`
+      : "- You want a documented, auditable behaviour you can read before installing";
   return `# ${s.name}
 
 ${s.description}
@@ -14,7 +18,7 @@ This ${km} ships as part of the **${s.source}** registry and is maintained by \`
 ## When to use it
 
 - You want consistent, repeatable behaviour across sessions
-- You are working inside the ${s.topics.join(", ")} space
+${topicsLine}
 - You'd rather not re-explain the same context to your agent every time
 
 ## Configuration

@@ -32,7 +32,13 @@ export function SkillCard({ skill }: SkillCardProps) {
     >
       <div className="flex items-center justify-between gap-2">
         <KindBadge kind={skill.kind} />
-        <AuditBadge verdict={skill.audit.verdict} />
+        {skill.preview ? (
+          <span className="inline-flex items-center rounded-md border border-[hsl(215_15%_22%)] px-[7px] py-[2px] text-[10.5px] font-semibold uppercase tracking-[.04em] text-[hsl(212_10%_58%)]">
+            Sample
+          </span>
+        ) : (
+          <AuditBadge verdict={skill.audit.verdict} />
+        )}
       </div>
 
       <div>

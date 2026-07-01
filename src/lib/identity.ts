@@ -9,3 +9,12 @@ export function isValidSegment(value: string | undefined | null): boolean {
 export function isValidIdentity(owner: string, repo: string, skill: string): boolean {
   return isValidSegment(owner) && isValidSegment(repo) && isValidSegment(skill);
 }
+
+/**
+ * Builds the GitHub repo URL for an owner/repo pair. Returns "" when either segment fails
+ * the allowlist, so callers can fall back rather than emit a malformed/hostile link.
+ */
+export function repoUrl(owner: string, repo: string): string {
+  if (!isValidSegment(owner) || !isValidSegment(repo)) return "";
+  return `https://github.com/${owner}/${repo}`;
+}

@@ -43,6 +43,8 @@ export interface Skill {
   files: SkillFile[];
   /** False when owner/repo/skill fail the identity allowlist — install is unsafe. */
   installable: boolean;
+  /** True for sample rows shown while the registry is unreachable — not real installable entries. */
+  preview?: boolean;
 }
 
 export interface AgentTarget {

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Search, WifiOff } from "lucide-react";
 import { TOPICS } from "@/data/skills";
 import type { LeaderboardTab, Skill } from "@/data/types";
 import { formatCount } from "@/lib/format";
@@ -18,6 +18,7 @@ import { SkillCardSkeleton } from "@/components/domain/SkillCardSkeleton";
 import { PreviewBanner } from "@/components/domain/PreviewBanner";
 
 const GRID = "grid grid-cols-[repeat(auto-fill,minmax(330px,1fr))] gap-4";
+const PAGE_SIZE = 48;
 
 function Hero({ skills }: { skills: Skill[] }) {
   const totalInstalls = skills.reduce((acc, s) => acc + s.installs, 0);
@@ -69,20 +70,30 @@ export function HomePage() {
   const [topics, setTopics] = useState<string[]>([]);
   const [kind, setKind] = useState<KindFilterValue>("all");
 
-  const { skills, loading, usingFallback } = useSkills();
+  const { skills, loading, usingFallback, retry } = useSkills();
 
   // Real server search only when hitting the live registry; mock/fallback uses the client filter.
   const serverSearchEnabled = !usingFallback && query.trim().length > 0;
-  const { results: searchResults, loading: searching } = useSkillSearch(
-    query,
-    mode,
-    serverSearchEnabled,
-  );
+  const {
+    results: searchResults,
+    loading: searching,
+    error: searchError,
+    retry: retrySearch,
+  } = useSkillSearch(query, mode, serverSearchEnabled);
 
   const base = serverSearchEnabled ? searchResults : skills;
   const filterQuery = serverSearchEnabled ? "" : query;
   const results = useFilteredSkills({ skills: base, query: filterQuery, tab, topics, kind });
   const busy = loading || searching;
+  // Distinguish a search backend failure from a genuine empty result set.
+  const searchFailed = serverSearchEnabled && !searching && searchError !== null;
+
+  const [visible, setVisible] = useState(PAGE_SIZE);
+  useEffect(() => {
+    setVisible(PAGE_SIZE);
+  }, [query, mode, tab, topics, kind, usingFallback]);
+  const shown = results.slice(0, visible);
+  const hasMore = results.length > visible;
 
   const toggleTopic = (t: string): void => {
     setTopics((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
@@ -99,7 +110,7 @@ export function HomePage() {
     <main className="mx-auto max-w-[1200px] px-6 pb-[90px]">
       <Hero skills={skills} />
 
-      {usingFallback && <PreviewBanner />}
+      {usingFallback && <PreviewBanner onRetry={retry} />}
 
       <LeaderboardTabs active={tab} onChange={setTab} />
 
@@ -109,7 +120,11 @@ export function HomePage() {
       </div>
 
       <div aria-live="polite" className="sr-only">
-        {busy ? "Loading skills" : `${results.length} skills found`}
+        {busy
+          ? "Loading skills"
+          : searchFailed
+            ? "Search is unavailable"
+            : `${results.length} skills found`}
       </div>
 
       {busy ? (
@@ -118,12 +133,28 @@ export function HomePage() {
             <SkillCardSkeleton key={i} />
           ))}
         </div>
+      ) : searchFailed ? (
+        <EmptyState
+          icon={<WifiOff className="h-6 w-6" strokeWidth={1.8} />}
+          title="Search is unavailable"
+          description="We couldn't reach the search service. This isn't an empty result — please try again."
+          action={<Button onClick={retrySearch}>Retry search</Button>}
+        />
       ) : results.length > 0 ? (
-        <div className={GRID}>
-          {results.map((skill) => (
-            <SkillCard key={skill.id} skill={skill} />
-          ))}
-        </div>
+        <>
+          <div className={GRID}>
+            {shown.map((skill) => (
+              <SkillCard key={skill.id} skill={skill} />
+            ))}
+          </div>
+          {hasMore && (
+            <div className="mt-8 flex justify-center">
+              <Button variant="secondary" onClick={() => setVisible((n) => n + PAGE_SIZE)}>
+                Show more ({results.length - visible} more)
+              </Button>
+            </div>
+          )}
+        </>
       ) : (
         <EmptyState
           icon={<Search className="h-6 w-6" strokeWidth={1.8} />}
