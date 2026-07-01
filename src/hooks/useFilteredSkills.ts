@@ -24,7 +24,9 @@ export function useFilteredSkills({ skills, query, tab, topics, kind }: Filters)
     }
     if (kind !== "all") list = list.filter((s) => s.kind === kind);
     if (topics.length) list = list.filter((s) => topics.some((t) => s.topics.includes(t)));
-    if (tab === "official") list = list.filter((s) => s.source === "devfellowship");
+    if (tab === "official") {
+      list = list.filter((s) => s.owner.toLowerCase() === "devfellowship");
+    }
 
     if (tab === "hot") {
       list.sort((a, b) => b.installs - a.installs);

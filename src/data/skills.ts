@@ -1,4 +1,23 @@
 import type { AgentTarget, Skill } from "./types";
+import { isValidIdentity } from "@/lib/identity";
+
+/** Mock rows are authored with the legacy source+slug shape; owner/repo/skill are derived. */
+type MockSkill = Omit<Skill, "owner" | "repo" | "skill" | "installable">;
+
+function normalizeMock(m: MockSkill): Skill {
+  const parts = m.source.split("/").filter(Boolean);
+  const owner = parts[0] ?? m.source;
+  const repo = parts[1] ?? m.slug;
+  const skill = m.slug;
+  return {
+    ...m,
+    owner,
+    repo,
+    skill,
+    source: `${owner}/${repo}`,
+    installable: isValidIdentity(owner, repo, skill),
+  };
+}
 
 export const AGENTS: AgentTarget[] = [
   { id: "claude-code", label: "Claude Code" },
@@ -25,12 +44,12 @@ function fileStub(path: string, body: string): { path: string; contents: string 
 const SKILL_MD = (name: string, desc: string): string =>
   `---\nname: ${name}\n---\n\n# ${name}\n\n${desc}\n`;
 
-export const SKILLS: Skill[] = [
+const MOCK_SKILLS: MockSkill[] = [
   {
     id: "1",
     name: "dfl-code-style",
     slug: "dfl-code-style",
-    source: "devfellowship",
+    source: "devfellowship/skills",
     kind: "skill",
     description:
       "Enforces the DevFellowship TypeScript + React conventions: strict types, one-component-per-file, hooks for logic, JSX-only render.",
@@ -54,7 +73,7 @@ export const SKILLS: Skill[] = [
     id: "2",
     name: "dfl-pr-learnings",
     slug: "dfl-pr-learnings",
-    source: "devfellowship",
+    source: "devfellowship/skills",
     kind: "skill",
     description:
       "Captures review feedback from merged PRs and feeds it back as guidance so the agent stops repeating the same mistakes.",
@@ -77,7 +96,7 @@ export const SKILLS: Skill[] = [
     id: "3",
     name: "dfl-stack",
     slug: "dfl-stack",
-    source: "devfellowship",
+    source: "devfellowship/skills",
     kind: "skill",
     description:
       "Scaffolds and reasons about the canonical DFL stack: Vite, React 18, React Router v6, Tailwind, shadcn/ui and Supabase.",
@@ -102,7 +121,7 @@ export const SKILLS: Skill[] = [
     id: "4",
     name: "spec-driven",
     slug: "spec-driven",
-    source: "devfellowship",
+    source: "devfellowship/skills",
     kind: "skill",
     description:
       "Turns a loose request into a written spec first, gets sign-off, then implements against it — fewer wrong turns, cleaner diffs.",
@@ -125,7 +144,7 @@ export const SKILLS: Skill[] = [
     id: "5",
     name: "squad-review",
     slug: "squad-review",
-    source: "devfellowship",
+    source: "devfellowship/skills",
     kind: "skill",
     description:
       "Runs a multi-persona code review (security, perf, a11y, style) and consolidates the findings into a single ranked report.",
@@ -148,7 +167,7 @@ export const SKILLS: Skill[] = [
     id: "6",
     name: "dfl-mcp-plans",
     slug: "dfl-mcp-plans",
-    source: "devfellowship",
+    source: "devfellowship/skills",
     kind: "mcp",
     description:
       "MCP server exposing the DFL planning board — read sprints, create tickets and link PRs directly from your agent.",
@@ -175,7 +194,7 @@ export const SKILLS: Skill[] = [
     id: "7",
     name: "woovi-payments",
     slug: "woovi-payments",
-    source: "devfellowship",
+    source: "devfellowship/skills",
     kind: "connection",
     description:
       "OAuth connection to Woovi for Pix and boleto payments — create charges, check status and reconcile from inside the agent.",
@@ -309,3 +328,5 @@ export const SKILLS: Skill[] = [
     ],
   },
 ];
+
+export const SKILLS: Skill[] = MOCK_SKILLS.map(normalizeMock);

@@ -1,7 +1,5 @@
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/Button";
 import { CodeBlock } from "@/components/ui/CodeBlock";
 
 function SectionTitle({ children }: { children: string }) {
@@ -36,7 +34,7 @@ export function DocsPage() {
 
       <SectionTitle>Install a skill</SectionTitle>
       <div className="mb-[34px] flex flex-col gap-2">
-        <CodeBlock command="npx skills add devfellowship/dfl-code-style" size="sm" copyMessage="Copied" />
+        <CodeBlock command="npx skills add devfellowship/skills@dfl-code-style" size="sm" copyMessage="Copied" />
         <CodeBlock command={'npx skills find "review my PR"'} size="sm" copyMessage="Copied" />
         <CodeBlock command="npx skills update --all" size="sm" copyMessage="Copied" />
       </div>
@@ -60,12 +58,15 @@ export function DocsPage() {
         assigns a trust score on merge.
       </p>
       <div className="flex flex-wrap gap-3">
-        <Button
-          icon={<Plus className="h-[15px] w-[15px]" strokeWidth={2.2} />}
-          onClick={() => toast.success("Opening devfellowship/skills on GitHub…")}
+        <a
+          href="https://github.com/devfellowship/skills"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex h-[38px] items-center justify-center gap-2 rounded-lg bg-primary px-4 text-[13.5px] font-bold text-primary-foreground transition-colors hover:bg-[hsl(33_92%_60%)]"
         >
+          <Plus className="h-[15px] w-[15px]" strokeWidth={2.2} />
           Open a PR
-        </Button>
+        </a>
         <Link
           to="/ds"
           className="inline-flex h-[38px] items-center justify-center rounded-lg border border-[hsl(215_15%_19%)] px-4 text-[13.5px] font-semibold text-foreground/85 transition-colors hover:border-[hsl(215_15%_28%)] hover:bg-[hsl(215_18%_13%)]"

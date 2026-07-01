@@ -3,6 +3,7 @@ import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import type { Skill } from "@/data/types";
 import { installCommand } from "@/lib/format";
+import { copyText } from "@/lib/clipboard";
 import { KindBadge } from "./KindBadge";
 import { AuditBadge } from "./AuditBadge";
 import { Sparkline } from "./Sparkline";
@@ -17,29 +18,37 @@ export function SkillCard({ skill }: SkillCardProps) {
 
   const onCopy = (e: React.MouseEvent): void => {
     e.stopPropagation();
-    const cmd = installCommand(skill.source, skill.slug);
-    void navigator.clipboard?.writeText(cmd).catch(() => undefined);
-    toast.success("Copied install command");
+    const cmd = installCommand(skill.owner, skill.repo, skill.skill);
+    void copyText(cmd).then((ok) => {
+      if (ok) toast.success("Copied install command");
+      else toast.error("Couldn't copy to clipboard");
+    });
   };
 
   return (
     <div
-      onClick={() => navigate(`/s/${skill.source}/${skill.slug}`)}
+      onClick={() => navigate(`/s/${skill.owner}/${skill.repo}/${skill.skill}`)}
       className="group flex min-h-[178px] cursor-pointer animate-fadeUp flex-col gap-[11px] rounded-[13px] border border-border bg-card p-[18px] transition-all hover:-translate-y-[3px] hover:border-[hsl(215_15%_26%)] hover:shadow-[0_10px_30px_hsl(216_40%_3%/.5)]"
     >
       <div className="flex items-center justify-between gap-2">
         <KindBadge kind={skill.kind} />
-        <AuditBadge verdict={skill.audit.verdict} />
+        {skill.preview ? (
+          <span className="inline-flex items-center rounded-md border border-[hsl(215_15%_22%)] px-[7px] py-[2px] text-[10.5px] font-semibold uppercase tracking-[.04em] text-[hsl(212_10%_58%)]">
+            Sample
+          </span>
+        ) : (
+          <AuditBadge verdict={skill.audit.verdict} />
+        )}
       </div>
 
       <div>
-        <div className="font-mono text-[15.5px] font-semibold tracking-[-.01em] text-foreground">
+        <div className="truncate font-mono text-[15.5px] font-semibold tracking-[-.01em] text-foreground">
           {skill.name}
         </div>
         <div className="mt-[3px] flex items-center gap-[5px] text-xs text-[hsl(212_10%_52%)]">
-          <span className="text-[hsl(33_80%_60%)]">{skill.source}</span>
+          <span className="truncate text-[hsl(33_80%_60%)]">{skill.source}</span>
           <span>·</span>
-          <span>{skill.author}</span>
+          <span className="truncate">{skill.author}</span>
         </div>
       </div>
 
@@ -52,14 +61,17 @@ export function SkillCard({ skill }: SkillCardProps) {
           <InstallCountBadge installs={skill.installs} />
           <Sparkline trend={skill.trend} />
         </div>
-        <button
-          type="button"
-          onClick={onCopy}
-          className="flex items-center gap-[6px] rounded-[7px] border border-[hsl(215_15%_20%)] bg-secondary px-[10px] py-[5px] text-[11.5px] font-semibold text-[hsl(212_13%_68%)] transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
-        >
-          <Copy className="h-3 w-3" />
-          Install
-        </button>
+        {skill.installable && (
+          <button
+            type="button"
+            onClick={onCopy}
+            aria-label={`Copy install command for ${skill.name}`}
+            className="flex items-center gap-[6px] rounded-[7px] border border-[hsl(215_15%_20%)] bg-secondary px-[10px] py-[5px] text-[11.5px] font-semibold text-[hsl(212_13%_68%)] transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
+          >
+            <Copy className="h-3 w-3" />
+            Install
+          </button>
+        )}
       </div>
     </div>
   );

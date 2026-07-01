@@ -7,6 +7,7 @@ import type {
   Skill,
   SkillFile,
 } from "@/data/types";
+import { isValidIdentity } from "@/lib/identity";
 
 const API_BASE: string =
   (import.meta.env.VITE_API_BASE as string | undefined) ?? "https://skills.devfellowship.com";
@@ -15,6 +16,7 @@ export interface ApiSkill {
   id?: string;
   name?: string;
   slug?: string;
+  skill?: string;
   owner?: string;
   repo?: string;
   source?: string;
@@ -126,28 +128,51 @@ function toFiles(items: ApiFile[] | undefined): SkillFile[] {
   }));
 }
 
+/** Splits a "owner/repo" source string, tolerating a bare owner or extra segments. */
+function splitSource(source: string | undefined): { owner: string; repo: string } {
+  const parts = (source ?? "").split("/").filter(Boolean);
+  const owner = parts[0] ?? "";
+  const repo = parts[1] ?? parts[0] ?? "";
+  return { owner, repo };
+}
+
+/**
+ * Identity resolution + hardening boundary. Every field below is author-controlled
+ * (comes from the registry payload), so it is treated as hostile: identity segments
+ * are validated against a shell-safe allowlist and `installable` is set accordingly.
+ * String rendering safety (XSS) is handled downstream by react-markdown / React's
+ * own text escaping — no raw HTML is ever produced from these values.
+ */
 export function adaptSkill(raw: ApiSkill): Skill {
-  const slug = raw.slug ?? raw.repo ?? raw.name ?? "unknown";
-  const source = raw.source ?? raw.owner ?? "devfellowship";
+  const skill = raw.skill ?? raw.slug ?? raw.name ?? "unknown";
+  const fromSource = splitSource(raw.source);
+  const owner = raw.owner ?? fromSource.owner ?? "devfellowship";
+  const repo = raw.repo ?? fromSource.repo ?? owner;
+  const source = `${owner}/${repo}`;
   const score = raw.audit?.score ?? 0;
   const mcps = toNamedList(raw.mcps ?? raw.mcp_tools);
   const conns = toConnList(raw.connections ?? raw.conns);
+  const installable = isValidIdentity(owner, repo, skill);
   return {
-    id: raw.id ?? `${source}/${slug}`,
-    name: raw.name ?? slug,
-    slug,
+    id: raw.id ?? `${owner}/${repo}/${skill}`,
+    name: raw.name ?? skill,
+    owner,
+    repo,
+    skill,
+    slug: skill,
     source,
     kind: toKind(raw.kind ?? raw.type),
     description: raw.description ?? raw.summary ?? "",
     topics: raw.topics ?? raw.tags ?? [],
     installs: raw.installs ?? raw.install_count ?? raw.installCount ?? 0,
     updatedAt: raw.updatedAt ?? raw.updated_at ?? "recently",
-    author: raw.author ?? source,
+    author: raw.author ?? owner,
     audit: { score, verdict: toVerdict(raw.audit?.verdict, score) },
     trend: raw.trend ?? [],
     mcps,
     conns,
     files: toFiles(raw.files ?? raw.tree),
+    installable,
   };
 }
 
@@ -157,12 +182,13 @@ export async function fetchSkills(signal?: AbortSignal): Promise<Skill[]> {
 }
 
 export async function fetchSkill(
-  source: string,
-  slug: string,
+  owner: string,
+  repo: string,
+  skill: string,
   signal?: AbortSignal,
 ): Promise<Skill> {
   const data = await getJson<ApiSkill>(
-    `/api/v1/skills/${encodeURIComponent(source)}/${encodeURIComponent(slug)}/${encodeURIComponent(slug)}`,
+    `/api/v1/skills/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(skill)}`,
     signal,
   );
   return adaptSkill(data);
@@ -173,7 +199,7 @@ export async function searchSkills(
   mode: SearchMode,
   signal?: AbortSignal,
 ): Promise<Skill[]> {
-  const params = new URLSearchParams({ q: query, mode });
+  const params = new URLSearchParams({ q: query, semantic: String(mode === "semantic") });
   const data = await getJson<SearchResponse>(
     `/api/v1/skills/search?${params.toString()}`,
     signal,

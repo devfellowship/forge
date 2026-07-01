@@ -11,14 +11,18 @@ export interface SkillState {
   usingFallback: boolean;
 }
 
-export function useSkill(source: string | undefined, slug: string | undefined): SkillState {
+export function useSkill(
+  owner: string | undefined,
+  repo: string | undefined,
+  skillId: string | undefined,
+): SkillState {
   const [skill, setSkill] = useState<Skill | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [usingFallback, setUsingFallback] = useState(false);
 
   useEffect(() => {
-    if (!source || !slug) {
+    if (!owner || !repo || !skillId) {
       setSkill(null);
       setLoading(false);
       return;
@@ -26,12 +30,13 @@ export function useSkill(source: string | undefined, slug: string | undefined): 
 
     const controller = new AbortController();
     let active = true;
-    const mockMatch = SKILLS.find((s) => s.slug === slug && s.source === source) ?? null;
+    const mockMatch =
+      SKILLS.find((s) => s.owner === owner && s.repo === repo && s.skill === skillId) ?? null;
 
     setLoading(true);
     setError(null);
 
-    fetchSkill(source, slug, controller.signal)
+    fetchSkill(owner, repo, skillId, controller.signal)
       .then((live) => {
         if (!active) return;
         setSkill(live);
@@ -58,7 +63,7 @@ export function useSkill(source: string | undefined, slug: string | undefined): 
       active = false;
       controller.abort();
     };
-  }, [source, slug]);
+  }, [owner, repo, skillId]);
 
   return { skill, loading, error, usingFallback };
 }
